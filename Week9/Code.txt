@@ -1,0 +1,163 @@
+
+import java.io.BufferedInputStream;
+import java.io.FilterInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.MessageDigest;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * @author Sashank
+ */
+
+public class CustomInputStr extends BufferedInputStream implements Runnable{
+    private static volatile ArrayList al = new ArrayList();
+    static Integer intt = new Integer(1);
+    static int index;
+            
+    public CustomInputStr (InputStream io,int n,int size) throws IOException{
+        super(io,size);                                  //calls FillterInputStream constructor
+        int i=0,byt=0;
+        index = 0;
+        //CustomInputStr mt = new CustomInputStr(io, n, size);
+        Thread t = new Thread(this);
+        t.start();
+    } 
+    
+    @Override
+    public void run(){
+        try {
+            int byt;
+            synchronized(intt){
+            while((byt = in.read())!=-1){
+                if(al.size()<500){
+                    //System.out.println("writing"+(int)byt);
+                    al.add(byt);
+                }
+                else{
+                    if(al.size()>=500){
+                        //System.out.println("wait - run");
+                        //System.out.println("Sleep in Run");
+                        intt.notifyAll();
+                        intt.wait();
+                        //System.out.println("Run Awake");
+                    }
+                    al.add(byt);
+                }
+            }
+            if(byt==-1){
+                al.add(byt);
+                intt.notifyAll();
+            }
+           }
+        
+        } catch (Exception ex) {
+            System.out.println(ex);
+        }
+    }
+    
+    /*----------------------------Last Modified------------------------------------
+    public void run(){
+        try {
+            int byt;
+           synchronized(al){
+            while((byt = in.read())!=-1){
+                   // System.out.println("writing"+(int)byt);
+                    al.add(byt);
+            }
+           }
+        
+        } catch (Exception ex) {
+            System.out.println(ex);
+        }
+    }
+    */ //----------------------------------------------------------------------
+    
+    @Override
+    public synchronized int read(){
+        int byt = -1;
+        try{
+            synchronized(intt){
+                if(al.size()==0){
+                    //System.out.println("wait in Read");
+                    al.clear();
+                    intt.notifyAll();
+                    intt.wait();
+                    //System.out.println("Read Awake");
+                }
+                
+                 byt = (int)al.remove(0);
+                 //System.out.println("remove "+byt);
+                 return byt;
+                
+        }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        return byt;
+    }
+    /*  ------------------Last Modified----------------------------------
+    public synchronized int read(){
+        int byt = -1;
+        try{
+           synchronized(al){
+                if(al.size()>0){                                     //wait(10);
+                 byt = (int)al.remove(0);
+                 //System.out.println("remove "+byt);
+                 return byt;
+
+                }
+                else{
+                    return -1;
+                }
+        }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        return byt;
+    }
+    */
+    
+      /* public int read(){
+        int byt = -1;
+        try{
+            synchronized(intt){
+                return (int)al.get(index++);
+            }
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+        return byt;
+    }
+    */
+       
+    @Override
+    public int read(byte byt[]){
+        int length = 0;
+        try{
+            length = in.read(byt);
+        }
+        catch(IOException e){
+            System.out.println(e);
+        }
+        
+        return length;
+    }
+    
+    @Override
+    public int read(byte byt[],int off,int length){
+        int l;
+        try{
+            l = in.read(byt,off, length);
+        }
+        catch(IOException e){
+            System.out.println(e);
+        }
+        
+        return 0;
+    }
+    
+}

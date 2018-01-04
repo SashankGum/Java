@@ -1,0 +1,317 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
+/**
+ *
+ * @author Sashank
+ */
+public class maze {
+    
+    public static final String FILE_NAME = "maze.txt";
+    public static final int START_LEVEL = 1;
+    public static final int START_ROW = 0;
+    public static final int START_INDEX = 1;
+    
+    
+    public static char[][][] displayMaze(Scanner sc){
+        String temp1;
+        int i=0,j=0,k=0;
+        while(sc.hasNextLine()){
+            temp1 = sc.nextLine().trim();
+            System.out.println(temp1);
+            if(temp1.startsWith("next")){
+                i++;
+                j=0;
+            }
+            else{
+                j++;
+            }
+        }
+        sc.close();
+        j--;
+        String[][] maaaze = new String[i+1][j+1];
+        i=0;
+        j=0;
+        try{
+            sc = new Scanner(new File(FILE_NAME));
+            while(sc.hasNextLine()){
+                temp1 = sc.nextLine().trim();
+                if(temp1.startsWith("next", 0)){
+
+                    i++;
+                    j=0;
+                }
+                else{
+                    maaaze[i][j] = temp1;
+                    j++;
+                }
+            }
+        }
+        catch(Exception e){
+            System.out.println("Error!"+e);
+        }
+
+       char[][][] m = new char[maaaze.length][maaaze[0].length][maaaze[0][1].length()];
+        for(i=0;i<maaaze.length;i++){
+            for(j=0;j<maaaze[0].length;j++){
+                for(k=0;k<maaaze[0][1].length();k++){
+                m[i][j][k] = maaaze[i][j].toCharArray()[k];
+                }    
+            }
+        }
+        
+       return m;
+    }
+    
+    public static String checkDirection(char[][][] maze,int i,int j,int k){
+        String dir = "none";
+        if(maze[i][j].length-1!=k){
+            if(maze[i][j][k+1]=='.'){
+                dir="east";
+            }
+        }
+        if(maze[i].length-1!=j){
+                if(maze[i][j+1][k]=='.'){
+                    dir="south";
+                }
+        }
+        if(j!=0){
+                if(maze[i][j-1][k]=='.')
+                    dir="north";
+            }
+        if(k!=0){
+                if(maze[i][j][k-1]=='.'){
+                    dir= "west";
+                }
+        }
+        if(i!=0){
+                if(maze[i-1][j][k]=='.'){
+                    dir= "up";
+                }
+        }
+        if(maze.length-1!=i){
+                if(maze[i+1][j][k]=='.'){
+                    dir = "down";
+                }
+        }
+
+            return dir;
+     }
+    
+        public static int countDirection(char[][][] maze,int i,int j,int k){
+        int count = 0;
+        if(maze[i][j].length-1!=k){
+            if(maze[i][j][k+1]=='.'){
+                count++;
+            }
+        }
+        if(maze[i].length-1!=j){
+                if(maze[i][j+1][k]=='.'){
+                    count++;
+                }
+        }
+        if(j!=0){
+                if(maze[i][j-1][k]=='.')
+                    count++;
+            }
+        if(k!=0){
+                if(maze[i][j][k-1]=='.'){
+                    count++;
+                }
+        }
+        if(i!=0){
+                if(maze[i-1][j][k]=='.'){
+                    count++;
+                }
+        }
+        if(maze.length-1!=i){
+                if(maze[i+1][j][k]=='.'){
+                    count++;
+                }
+        }
+
+            return count;
+     }
+
+       
+    public static boolean checkFinish(char[][][] maze,int i, int j, int k){
+        boolean end = false; 
+        if(i==START_LEVEL && j==START_ROW && k==START_INDEX){
+            end = false;
+        }
+        else{
+            if(k == maze[i][j].length-1 && maze[i][j][maze[0][1].length-1]=='.')
+                end = true;
+            if(j == maze[1].length-1 && maze[i][maze[1].length-1][k]=='.')
+                end = true;
+            if(j == 0 && maze[i][0][k]=='.')
+                end = true;
+            if(k == 0 && maze[i][j][0]=='.')
+                end = true;
+            }
+        
+        return end;
+    }
+    
+    public static boolean rightWall(char[][][] maze,int i, int j, int k){
+        boolean right = false; 
+        switch(checkDirection(maze, i, j, k)){
+            case "east":
+                if(maze[i][j+1][k]=='#')
+                    right = true;
+                break;
+            case "south":
+                if(maze[i][j][k-1]=='#')
+                    right = true;
+                break;
+            case "west":
+                if(maze[i][j-1][k]=='#')
+                    right = true;
+                break;
+            case "north":
+                if(maze[i][j][k+1]=='#')
+                    right = true;
+                break;
+            case "none":
+                    right = false;
+            default :
+                    right = false;
+        
+        }
+        return right;
+    }
+    
+    public static void startGame(char[][][] maze){
+        int i,j,k,p,t,r,tempi,tempj,tempk;
+        String dir;
+        i = START_LEVEL;
+        j = START_ROW;
+        k = START_INDEX;
+        tempi = i;
+        tempj = j;
+        tempk = k;
+        int dirCount = 0;
+        int retcount = 0;
+        //String temp = checkDirection(maze, 1, 3, 17);
+        //System.out.println(checkFinish(maze, 1, 5, 2));
+        System.out.println("maze["+i+"]["+j+"]["+k+"]");
+        System.out.println(checkDirection(maze, 1, 1, 1));
+        outerloop:
+        while(!checkFinish(maze, i, j, k)){
+           dir = checkDirection(maze, i, j, k);   
+            if(dir == "none"){
+                maze[i][j][k]='~';
+                System.out.println("swap");
+                //retcount++;
+                System.out.println("maze.retcount()"+retcount);
+                //if(retcount>30)
+                  //  break outerloop;
+                i = tempi;
+                j = tempj;
+                k = tempk;
+            }
+            else{
+            if(dir!="none"){
+                if(rightWall(maze, i, j, k)){
+                    System.out.println("if right");
+                    switch(dir){
+                        case "up": maze[i][j][k] = '~';
+                                    i--;
+                                    break;
+                        case "down": maze[i][j][k] = '~'; 
+                                    i++; 
+                                    break;
+                        case "east": maze[i][j][k] = '~';
+                                    k++;
+                                    break;
+                        case "west": maze[i][j][k] = '~';
+                                     k--;
+                                    break;
+                        case "north": maze[i][j][k] = '~';
+                                      j--;
+                                    break;
+                        case "south": maze[i][j][k] = '~';
+                                     j++;
+                                    break;
+                    }
+                    System.out.println("Count - " + countDirection(maze, i, j, k));
+                    if(countDirection(maze, i, j, k)>1){
+                        System.out.println(countDirection(maze, i, j, k));
+                        tempi = i;
+                        tempj = j;
+                        tempk = k;
+                        System.out.println("countttt");
+                    }
+                        
+                     System.out.println("maze["+i+"]["+j+"]["+k+"]");
+                     
+                }
+                else{ 
+                    System.out.println("multi dir");
+                    
+                    switch(dir){
+                        case "up": maze[i][j][k] = '~';
+                                    i--;
+                                    break;
+                        case "down":maze[i][j][k] = '~'; 
+                                    i++; 
+                                    break;
+                        case "east":maze[i][j][k] = '~';
+                                    k++;
+                                    break;
+                        case "west":maze[i][j][k] = '~';
+                                    k--;
+                                    break;
+                        case "north":maze[i][j][k] = '~'; 
+                                     j--;
+                                    break;
+                        case "south": maze[i][j][k] = '~'; 
+                                     j++;
+                                     break;
+                    }
+                    System.out.println("maze["+i+"]["+j+"]["+k+"]");
+                }
+        
+            }
+            }
+        }
+        
+        if(checkFinish(maze, i, j, k)){
+            maze[i][j][k] = '~';
+            System.out.println("Maze end found!");
+        }
+        else
+            System.out.println("Oops...Maze End Not found!");
+        
+        for(i=0;i<maze.length;i++){
+            for(j=0;j<maze[0].length;j++){
+                for(k=0;k<maze[0][1].length;k++){
+                    System.out.print(maze[i][j][k]);
+                }
+                    System.out.println();
+            }
+            System.out.println("\n");
+        }
+    }
+ 
+    
+    
+    public static void main(String args[]){
+        int length;
+        char[][][] mazee;
+        try {
+        Scanner sc = new Scanner(new File(FILE_NAME));
+        mazee = displayMaze(sc);
+        startGame(mazee);
+        }
+        catch(Exception e){
+            System.out.println("Error!"+e);
+        }
+        
+    }
+}

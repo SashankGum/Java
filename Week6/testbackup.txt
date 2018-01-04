@@ -1,0 +1,65 @@
+import java.util.*;
+
+public class Test <T>{
+   MyStorage aStorage;
+   long milliSeconds = 0;
+   
+   public Test() {
+   }
+   public void start()	{
+	milliSeconds = System.currentTimeMillis();
+   }
+   public void end()	{
+	System.err.println("Time for all:	" + ( System.currentTimeMillis() - milliSeconds) );
+   }
+   
+   public void testIt(MyStorage aStorage)	{
+	this.aStorage = (MyStorage) aStorage;
+	start();
+
+	end();
+        
+   }
+   
+   public void testInt(MyStorage aStorage){
+        this.aStorage = (MyStorage) aStorage;
+        start();
+        aStorage.add(1);
+        aStorage.add(7);
+        aStorage.add(9);
+        aStorage.add(7);
+        System.out.println("contains():"+aStorage.contains(9));
+        System.out.println("remove()"+aStorage.remove(9));
+        System.out.println("isEmpty()"+aStorage.isEmpty());
+        aStorage.clear();
+        System.out.println("isEmpty()"+aStorage.isEmpty());
+        end();
+   }
+   
+   public void testString(MyStorage aStorage){
+       this.aStorage = (MyStorage) aStorage;
+       start();
+       aStorage.add("abc");
+       aStorage.add("def");
+       aStorage.add("ghi");
+       aStorage.add("def");
+       System.out.println("contains():"+aStorage.contains("def"));
+       System.out.println("remove()"+aStorage.remove("def"));
+       System.out.println("isEmpty()"+aStorage.isEmpty());
+       aStorage.clear();
+       System.out.println("isEmpty()"+aStorage.isEmpty());
+       end();
+   }
+
+   public static void main(String args[] )	{
+         //------------For Integer-----------------------------
+	 //(new Test<Integer>()).testInt(new MyHashSet<Integer>());
+         //(new Test<Integer>()).testInt(new MySortedList<Integer>());
+         //(new Test<Integer>()).testInt(new MyList<Integer>());
+         //------------For String--------------------------------
+        (new Test<String>()).testInt(new MyList<String>());
+         //(new Test<String>()).testInt(new MySortedList<String>());
+         //(new Test<String>()).testInt(new MyHashSet<String>());
+	System.exit(0);
+   }
+}

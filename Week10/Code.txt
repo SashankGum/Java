@@ -1,0 +1,170 @@
+import java.io.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+/**
+ * This Program counts the number of even and odd digits of pi from a given text file.
+ * 
+ * @author Sashank Gummuluri
+ * @author Rajkumar Pillai
+ */
+public class NIOTest extends Thread {
+    
+    int even = 0;
+    int odd = 0;
+    static final Integer inn = new Integer(1);
+    static final Integer inn2 = new Integer(2);
+    private  static String fileName = "data.txt";
+    NIOInputStream input ;
+    static int MAX = 1024;
+    char [] buf = new char[MAX];
+    int info;
+    String name;
+    CountDownLatch cd;
+    PrintWriter[] pw;
+    static int file_counter = 0;
+    
+    static int writeReturn = 0;
+    static int bufferStatus =0;
+    static int threadCounter = 0;
+    int id;
+
+    public NIOTest(String name,int id) throws FileNotFoundException{
+        try{
+        this.input = new NIOInputStream(new InputStreamReader (new FileInputStream(fileName)),buf );
+        this.name = new String(name);
+        this.id = id;
+        pw = new PrintWriter[4];
+        }
+        catch(Exception e){
+            System.out.println(e);
+        }
+    }
+    
+
+    private int nextBlock() throws IOException  {
+        return input.read(buf, 0, buf.length); // this is the marked line
+    }
+    public void countEvenOdd() throws IOException  {
+        //pw = new PrintWriter("File.txt");
+        long ms = System.currentTimeMillis();
+        long even = 0;
+        long odd  = 0;
+            
+        //pw.write(buf);
+        synchronized(inn2){
+        try     {
+            bufferStatus = 1;
+            System.out.println("Write");
+            //sleep(100);
+            inn2.notifyAll();
+            inn2.wait();
+            System.out.println("GotNotified");
+                while (  ( writeReturn = nextBlock() ) != -1 ) {
+                    System.out.println("Writer - notify wait()"+writeReturn);
+                    bufferStatus=1;
+                    inn2.notifyAll();
+                    inn2.wait();
+                    //System.out.println("After Read");
+                       // for ( int index = 0; index < soManyCharactersRead; index ++ )   {
+                            //System.out.println(buf[0]);
+                        //}
+                           // pw.write(buf);
+                        //}
+                }
+                writeReturn = -1;
+        }
+        catch(Exception ee){
+            System.out.println(ee);
+        }
+        //pw.flush();
+        System.out.println(even+"---"+odd);
+        }
+    }
+    
+    public void reader(){
+        synchronized(name){
+            try {
+                System.out.println("Thread "+getName());
+                pw[id-1] = new PrintWriter("file"+(id)+".txt");
+                while(writeReturn!=-1){
+                    if(bufferStatus==1){
+                        if(threadCounter>=2){
+                            pw[id-1].write(buf);
+                            bufferStatus=0;
+                            System.out.println("Notify  Reader thread " + threadCounter);
+                            threadCounter = 0;
+                            inn2.notifyAll();
+                            name.wait();
+                        }
+                        else{
+                            pw[id-1].write(buf);
+                            pw[id-1].flush();
+                            System.out.println(buf[0]);
+                            System.out.println("Reader thread " + threadCounter);
+                            threadCounter++;
+                            name.wait();
+                        }
+                    }
+                    else{
+                        inn2.notifyAll();
+                        name.wait();
+                    }
+                }
+                if(writeReturn==-1){
+                    pw[id-1].flush();
+                }
+
+            } catch (Exception ex) {
+                System.out.println(ex);
+            }
+            //}
+        }
+    
+    }
+    
+    @Override
+    public void run(){
+        try {
+            if(name.equals("writer"))
+                countEvenOdd();
+            else{
+                System.out.println("READ RUN");
+                reader();
+            }
+                
+        } catch (IOException ex) {
+            System.out.println(ex);
+        }
+    }
+   /**
+    * Reads the files and counts the number of even and odd digits of pi.
+    *
+    * @param  args command line arguments
+    */
+    public static void main(String[] args) {
+            long ms = System.currentTimeMillis();
+            try{
+                NIOTest writer = new NIOTest("writer",0);
+                writer.start();
+                
+                NIOTest reader[] = new NIOTest[4];
+                for(int i = 0;i<3;i++){
+                    reader[i] = new NIOTest("reader"+i,i+1);
+                }
+                for(int i = 0;i<3;i++){
+                    reader[i].start();
+                }
+                for(int i = 0;i<3;i++){
+                    reader[i].join();
+                }
+            }
+            catch(Exception e){
+                e.printStackTrace();
+            }
+        System.out.println("Time Taken"+(System.currentTimeMillis()-ms));
+    }
+    
+}
